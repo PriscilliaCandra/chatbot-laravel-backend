@@ -48,8 +48,18 @@ class ChatController extends Controller
             return strlen($data);
         });
 
-        curl_exec($ch);
+        $response = curl_exec($ch);
+
+        if ($response === false) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            return response()->json(['error' => 'Curl Error: ' . $error], 500);
+        }
+
         curl_close($ch);
+
+        // curl_exec($ch);
+        // curl_close($ch);
 
         // $chat = ChatHistory::create([
         //     'user_id' => Auth::id(),
