@@ -61,19 +61,36 @@ class ChatController extends Controller
         // curl_exec($ch);
         // curl_close($ch);
 
-        // $chat = ChatHistory::create([
-        //     'user_id' => Auth::id(),
-        //     'user_message' => $request->message,
-        //     'ai_response' => $fullResponse
-        // ]);
+        $user = auth()->user();
+        if($user) {
+            ChatHistory::create([
+                'user_id' => $user->id,
+                'user_message' => $prompt,
+                'ai_response' => $fullResponse
+            ]);
+        }
 
         return response()->json(['result' => $fullResponse]);
     }
 
-    // public function index()
-    // {
-    //     $chats = ChatHistory::where('user_id', Auth::id())->latest()->get();
-    //     return response()->json($chats);
-    // }
+    public function history()
+    {
+        $user = auth()->user();
+
+        if(!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // echo"$user->id";
+        $history = ChatHistory::where('user_id', $user->id)->latest()->get(['user_message', 'ai_response', 'created_at']);
+
+        return response()->json($history);
+    }
+
+    public function logout(Request $request)
+    {
+        JWTAuth::invalidate(JWTAuth::getToken()); // Ini menginvalidate token JWT saat ini
+        return response()->json(['message' => 'Successfully logged out']);
+    }
 
 }
